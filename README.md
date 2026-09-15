@@ -4,6 +4,8 @@ Use [ZoomInfo](https://www.zoominfo.com) go-to-market intelligence from LLM clie
 
 This repo packages ZoomInfo's hosted MCP server with client-specific plugin metadata and task-focused skills for sales, marketing, and revenue workflows. It is intended to work across supported LLM clients rather than being tied to a single provider.
 
+**Attribution:** Upstream product and branding are from [ZoomInfo](https://www.zoominfo.com). This is a fork under [CloudNerdATX](https://github.com/CloudNerdATX/zoominfo-mcp-plugin) for Grok Bot Agent Plugins packaging.
+
 ## What It Enables
 
 - Find companies, contacts, and buying committee members
@@ -27,7 +29,21 @@ This repo packages ZoomInfo's hosted MCP server with client-specific plugin meta
 
 ## MCP Server
 
-The plugin registers ZoomInfo's hosted MCP server (`https://mcp.zoominfo.com/mcp`). Authentication is handled through your ZoomInfo account via OAuth — no API keys are stored in this repo. Two registration styles are used depending on the client's MCP implementation:
+The plugin registers ZoomInfo's hosted MCP server (`https://mcp.zoominfo.com/mcp`). Authentication is handled through your ZoomInfo account via OAuth — no API keys are stored in this repo. Registration style depends on the client:
+
+**Grok Bot (Agent Plugins) — streamable HTTP** — primary packaging for marketplace submit. Root `mcp.json`:
+
+```json
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "zoominfo": {
+      "type": "streamable-http",
+      "url": "https://mcp.zoominfo.com/mcp"
+    }
+  }
+}
+```
 
 **Direct HTTP** — for clients whose MCP runtime completes the OAuth handshake natively (Claude, Codex). Defined in `.mcp.json`:
 
@@ -42,7 +58,7 @@ The plugin registers ZoomInfo's hosted MCP server (`https://mcp.zoominfo.com/mcp
 }
 ```
 
-**Local stdio bridge (`mcp-remote`)** — for Cursor, whose native client cannot complete this server's OAuth discovery directly. `mcp-remote` runs the OAuth flow locally (opening a browser on first use, then caching and refreshing tokens) and bridges to the client over stdio. Defined in `mcp.json`:
+**Local stdio bridge (`mcp-remote`)** — for Cursor, whose native client cannot complete this server's OAuth discovery directly. `mcp-remote` runs the OAuth flow locally (opening a browser on first use, then caching and refreshing tokens) and bridges to the client over stdio. Defined in `mcp.cursor.json`:
 
 ```json
 {
@@ -51,8 +67,9 @@ The plugin registers ZoomInfo's hosted MCP server (`https://mcp.zoominfo.com/mcp
       "command": "npx",
       "args": [
         "-y",
-        "mcp-remote@0.1.16",
+        "mcp-remote@0.1.38",
         "https://mcp.zoominfo.com/mcp",
+        "46818",
         "--static-oauth-client-metadata",
         "{\"scope\":\"openid profile email offline_access zi_api zi_mcp api:data:mcp\"}"
       ]
@@ -63,14 +80,42 @@ The plugin registers ZoomInfo's hosted MCP server (`https://mcp.zoominfo.com/mcp
 
 > The `mcp-remote` bridge requires Node.js (`npx`) on the local machine. On first connection it opens a browser for ZoomInfo sign-in; subsequent launches reuse cached tokens.
 
+### Which MCP file to use
+
+| File | Client | Transport |
+|---|---|---|
+| `mcp.json` | Grok Bot (Agent Plugins) | streamable HTTP to ZoomInfo hosted MCP |
+| `mcp.cursor.json` | Cursor | `mcp-remote` OAuth bridge (stdio) |
+| `.mcp.json` | Claude / Codex | direct HTTP |
+
+## Grok Bot (Agent Plugins)
+
+This fork is packaged for Grok Bot using the Agent Plugins schema:
+
+| Path | Purpose |
+|---|---|
+| `plugin.json` | Root Agent Plugins metadata (`name`, `version`, logo, keywords) |
+| `mcp.json` | Streamable HTTP MCP registration for Grok Bot |
+| `skills/` | Task-specific workflows |
+
+See [docs/GROK-BOT.md](docs/GROK-BOT.md) for compatibility notes and the submit path.
+
+### Submit to the marketplace
+
+1. Keep the repository **open source** (public).
+2. Submit at **https://cursor.com/marketplace/publish** for **manual review**.
+3. **Do not** submit via `https://github.com/xai-org/plugin-marketplace`.
+
 ## Client Support
 
 This repository includes metadata for multiple plugin-capable client environments:
 
 | Path | Purpose |
 |---|---|
+| `plugin.json` | Grok Bot Agent Plugins metadata |
+| `mcp.json` | MCP server registration (Grok Bot — streamable HTTP) |
+| `mcp.cursor.json` | MCP server registration (Cursor — mcp-remote bridge) |
 | `.mcp.json` | MCP server registration (Claude / Codex) |
-| `mcp.json` | MCP server registration (Cursor) |
 | `.codex-plugin/plugin.json` | Codex/OpenAI plugin metadata |
 | `.claude-plugin/plugin.json` | Claude plugin metadata |
 | `.claude-plugin/marketplace.json` | Claude marketplace metadata |
@@ -81,7 +126,7 @@ This repository includes metadata for multiple plugin-capable client environment
 Install or register the plugin according to your client's plugin or MCP workflow. For local development, clone this repository and point your client at the repo root or relevant manifest path.
 
 ```bash
-git clone https://github.com/Zoominfo/zoominfo-mcp-plugin.git
+git clone https://github.com/CloudNerdATX/zoominfo-mcp-plugin.git
 ```
 
 ## Skills
@@ -108,6 +153,10 @@ Skills are task-focused playbooks the agent follows to return structured outputs
 ## Project Structure
 
 ```text
+plugin.json          # Grok Bot Agent Plugins metadata
+mcp.json             # streamable HTTP (Grok Bot)
+mcp.cursor.json      # mcp-remote bridge (Cursor)
+.mcp.json            # direct HTTP (Claude / Codex)
 .claude-plugin/
   plugin.json
   marketplace.json
@@ -116,8 +165,8 @@ Skills are task-focused playbooks the agent follows to return structured outputs
 .cursor-plugin/
   plugin.json
   marketplace.json
-.mcp.json            # direct HTTP registration (Claude / Codex)
-mcp.json             # mcp-remote bridge registration (Cursor)
+docs/
+  GROK-BOT.md
 assets/
   zoominfo-logo.svg
   zoominfo-logo-dark.svg
