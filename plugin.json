@@ -1,0 +1,12 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "zoominfo",
+  "version": "1.1.0",
+  "description": "Connect AI agents to ZoomInfo's verified GTM context graph: companies, contacts, buyer intent, and enrichment skills for prospecting and account research.",
+  "author": { "name": "ZoomInfo" },
+  "license": "MIT",
+  "repository": "https://github.com/CloudNerdATX/zoominfo-mcp-plugin",
+  "homepage": "https://www.zoominfo.com",
+  "logo": "./assets/zoominfo-logomark-red.svg",
+  "keywords": ["zoominfo", "mcp", "grok-bot", "sales", "enrichment", "prospecting", "intent", "b2b"]
+}

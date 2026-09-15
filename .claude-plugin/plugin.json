@@ -1,13 +1,13 @@
 {
   "name": "zoominfo",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Connect AI agents to ZoomInfo's verified GTM context graph: 100M companies, 300M professional contacts, buyer intent signals, and real-time scoops. Build prospect lists, enrich records, deep research key organizations, find decision-makers, and prioritize accounts by intent. The B2B sales intelligence layer for Claude and any MCP-compatible agent.",
   "author": {
     "name": "ZoomInfo",
     "email": "integrationsupport@zoominfo.com",
     "url": "https://www.zoominfo.com"
   },
-  "repository": "https://github.com/Zoominfo/zoominfo-mcp-plugin",
+  "repository": "https://github.com/CloudNerdATX/zoominfo-mcp-plugin",
   "homepage": "https://www.zoominfo.com",
   "license": "MIT",
   "keywords": [
